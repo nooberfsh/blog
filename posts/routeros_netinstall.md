@@ -80,3 +80,25 @@ Sent reboot command
 ```
 
 等待设备重启完成后就可以在浏览器输入 192.168.88.1 进到 ROS 的 WEB 页面。至此说明我们的安装成功了。
+
+## 高级
+上述安装方式会使用[默认配置](https://help.mikrotik.com/docs/display/ROS/Default+configurations), netinstall 
+提供选项可以忽略这个配置，也就是把 -r 替换称 -e
+```shell
+sudo ./netinstall-cli -e -b -a 192.168.88.3 ./routeros-7.14.2-arm.npk
+```
+其他安装步骤和上面一致。
+但是因为没有使用默认配置，设备是不带任何 ip 地址的，所以不能进入 WEB 后台了，这个时候我们要使用 [MAC-Telnet](https://github.com/haakonnessjoen/MAC-Telnet)
+这个工具，这个工具和 telnet 类似，不过工作在二层，使用 Mac 地址进行连接，安装方法可以在 github 页面找到。使用方法大致
+如下
+```shell
+mactelnet -l  # 寻找连接的 Mikrotik 设备，这一步会把设备的 Mac 地址打印出来
+mactelnet some-mac-address # 使用上面查询到的地址进行连接，这个时候就可以进入后台啦。
+```
+
+进入后台后就可以进行常规设置了。我的习惯是找一个接口设置为管理接口，比如
+```shell
+/ip address add address=192.168.88.1/24 interface=ether1 comment="MGMT"
+```
+这里把 ether1 设置为管理接口，设置完了之后退出 MacTelnet, 使用这个地址连接到 ROS, 然后在进行后续的配置。
+这样的好处是后面我不管怎么折腾，只要这个管理口的配置不变，我就能连接到 ROS,不会出现配置错误导致断联的情况。
